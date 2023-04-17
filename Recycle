@@ -1,0 +1,1080 @@
+public interface IBag<T> {
+    public boolean add(T newItem);
+    public boolean isEmpty();
+    public boolean isFull();
+    public T removeByIndex(int index);
+    public T remove();
+    public T remove(T item);
+    public int getItemCount();
+    public int getIndexOf(T item);
+    public boolean contains(T item);
+    public void displayItems(int i);
+    public void dump();
+    public boolean transferTo(IBag<T> targetBag, T item);
+}
+
+import java.util.Arrays;
+import java.util.Random;
+
+public class FabricRecycleBin<T> implements IBag<T> {
+    private boolean initialized = false;
+    private static int MAX_CAPACITY;
+    private T[] bag;
+    private int numberOfEntries;
+    public FabricRecycleBin() {
+            @SuppressWarnings("unchechked")
+            Integer[] maxCapList = {5, 10 ,15};
+            Random random = new Random();
+            int index = random.nextInt(maxCapList.length);
+            MAX_CAPACITY = maxCapList[index];
+            T[] tempBag = (T[]) new Object[maxCapList[index]];
+            bag = tempBag;
+            numberOfEntries = 0;
+            initialized = true;
+    }
+    private void checkInitialization() {
+        if (!initialized) {
+            throw new SecurityException("ArrayBag object is not initialized " + "properly.");
+        }
+    }
+    @Override
+    public boolean add(T newItem) {
+        checkInitialization();
+        boolean result = true;
+        if (isFull()) {
+            result = false;
+        } else {
+            bag[numberOfEntries] = newItem;
+            numberOfEntries++;
+        }
+        return result;
+    }
+
+    private void checkCapacity(int newLength) {
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return numberOfEntries == 0;
+    }
+
+    @Override
+    public boolean isFull() {
+        return numberOfEntries >= bag.length;
+    }
+
+    @Override
+    public T removeByIndex(int index) {
+        T result = null;
+        if (!isEmpty() && (index >= 0)) {
+            result = bag[index];
+            bag[index] = bag[numberOfEntries - 1];
+            bag[numberOfEntries - 1] = null;
+            numberOfEntries--;
+        }
+        return result;
+    }
+
+    @Override
+    public T remove() {
+        checkInitialization();
+        T result = null;
+        if (numberOfEntries > 0) {
+            result = bag[numberOfEntries - 1];
+            bag[numberOfEntries - 1] = null;
+            numberOfEntries--;
+        }
+        return result;
+    }
+
+    @Override
+    public T remove(T item) {
+        return null;
+    }
+
+    @Override
+    public int getItemCount() {
+        return numberOfEntries;
+    }
+
+    @Override
+    public int getIndexOf(T item) {
+        int where = -1;
+        boolean found = false;
+        int index = 0;
+        while (!found && (index < numberOfEntries)) {
+            if (item.equals(bag[index])) {
+                found = true;
+                where = index;
+            }
+            index++;
+        }
+        return where;
+    }
+
+    @Override
+    public boolean contains(T item) {
+        checkInitialization();
+        return getIndexOf(item) > -1;
+    }
+
+    @Override
+    public void displayItems(int i) {
+
+    }
+
+    @Override
+    public void dump() {
+        while (!isEmpty()) {
+            remove();
+        }
+    }
+
+    @Override
+    public boolean transferTo(IBag<T> targetBag, T item) {
+        return false;
+    }
+}
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+public class FileIO {
+    public IBag<Garbage> readTrashCan() throws FileNotFoundException {
+        File file = new File("C:\\Users\\serka\\OneDrive\\Masaüstü\\computer engineer\\Data Structures and Algorithms\\garbage.txt");
+        Scanner scanner = new Scanner(file);
+        TrashCan trashCan = new TrashCan();
+        while (scanner.hasNextLine()) {
+            String[] parts = scanner.nextLine().split(",");
+            int recursiveNumber = Integer.parseInt(parts[2]);
+            Garbage garbage = new Garbage(parts[0], parts[1]);
+            for (int index = 0; index < recursiveNumber; index++) {
+                trashCan.add(garbage);
+            }
+        }
+        return trashCan;
+    }
+
+    public boolean updateTrashCan() {
+        return false;
+    }
+}
+
+public class Garbage<T> {
+    String name;
+    String type;
+    public Garbage(String name, String type) {
+        this.name = name;
+        this.type = type;
+    }
+    public String toString() {
+        return name + "," + type;
+    }
+
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        Garbage o = (Garbage) obj;
+        return (name == o.name) && (type == o.type);
+    }
+}
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.FileWriter;
+public class GarbageRecyclingApp {
+    public static void main(String[] args) throws IOException {
+        FileIO fileIO = new FileIO();
+        TrashCan<Garbage> myTrashCan = (TrashCan<Garbage>) fileIO.readTrashCan();
+        System.out.println("Here is the content of the trash can initially:");
+
+        int ii = 0;
+        int nnn = myTrashCan.getItemCount();
+        while (ii < nnn) {
+            Garbage garbagePrintln = myTrashCan.removeByIndex(ii);
+            myTrashCan.add(garbagePrintln);
+            Garbage otherGarbagePrintln = myTrashCan.removeByIndex(ii);
+            myTrashCan.add(otherGarbagePrintln);
+            int jj = ii;
+            int ccounter = 0;
+            Garbage newGarbagePrintln = garbagePrintln;
+            while (jj + 1 < nnn && garbagePrintln.equals(newGarbagePrintln)) {
+                newGarbagePrintln = myTrashCan.removeByIndex(jj + 1);
+                myTrashCan.add(newGarbagePrintln);
+                Garbage addAgain = myTrashCan.removeByIndex(jj + 1);
+                myTrashCan.add(addAgain);
+                ccounter++;
+                jj++;
+            }
+            if (!(jj + 1< nnn && garbagePrintln.equals(newGarbagePrintln))) {
+                newGarbagePrintln = myTrashCan.removeByIndex(jj);
+                myTrashCan.add(newGarbagePrintln);
+                Garbage addAgain = myTrashCan.removeByIndex(jj);
+                myTrashCan.add(addAgain);
+                ccounter++;
+                jj++;
+            }
+            System.out.println(garbagePrintln.toString()+ ","  + ccounter);
+            ii += ccounter;
+        }
+
+        FabricRecycleBin<Garbage> fabricRecycleBin = new FabricRecycleBin<Garbage>();
+        GlassRecycleBin<Garbage> glassRecycleBin = new GlassRecycleBin<Garbage>();
+        MetalRecycleBin<Garbage> metalRecycleBin = new MetalRecycleBin<Garbage>();
+        OrganicRecycleBin<Garbage> organicRecycleBin = new OrganicRecycleBin<Garbage>();
+        PaperRecycleBin<Garbage> paperRecycleBin = new PaperRecycleBin<Garbage>();
+        PlasticRecycleBin<Garbage> plasticRecycleBin = new PlasticRecycleBin<Garbage>();
+
+        int accumulator = 0;
+        while (accumulator < myTrashCan.getItemCount()) {
+            boolean isAdded = false;
+            Garbage removedGarbage = myTrashCan.removeByIndex(accumulator);
+            switch (removedGarbage.type) {
+                case "plastic":
+                    isAdded = myTrashCan.transferTo(plasticRecycleBin, removedGarbage);
+                    break;
+                case "paper":
+                    isAdded = myTrashCan.transferTo(paperRecycleBin, removedGarbage);
+                    break;
+                case "glass":
+                    isAdded = myTrashCan.transferTo(glassRecycleBin, removedGarbage);
+                    break;
+                case "fabric":
+                    isAdded = myTrashCan.transferTo(fabricRecycleBin, removedGarbage);
+                    break;
+                case "metal":
+                    isAdded = myTrashCan.transferTo(metalRecycleBin, removedGarbage);
+                    break;
+                case "organic":
+                    isAdded = myTrashCan.transferTo(organicRecycleBin, removedGarbage);
+                    break;
+            }
+            if (!isAdded) {
+                myTrashCan.add(removedGarbage);
+                Garbage accum = myTrashCan.removeByIndex(accumulator);
+                myTrashCan.add(accum);
+                accumulator++;
+            }
+        }
+
+        IBag[] bagArray = new IBag[7];
+        bagArray[0] = plasticRecycleBin;
+        bagArray[1] = fabricRecycleBin;
+        bagArray[2] = metalRecycleBin;
+        bagArray[3] = glassRecycleBin;
+        bagArray[4] = organicRecycleBin;
+        bagArray[5] = paperRecycleBin;
+        bagArray[6] = myTrashCan;
+
+        String[] bagName={"Plastic recycle bin","Fabric recycle bin","Metal recycle bin","Glass recycle bin","Organic recycle bin","Paper recycle bin","Updated trash can"};
+
+        int nameOrder = 0;
+        FileWriter myWriter = new FileWriter("C:\\Users\\serka\\OneDrive\\Masaüstü\\computer engineer\\Data Structures and Algorithms\\updated garbage.txt");
+        for (IBag<Garbage> bag: bagArray) {
+            System.out.println();
+            System.out.println(bagName[nameOrder] + " size is " + bag.getItemCount() + " and contents:");
+            int i = 0;
+            int nn = bag.getItemCount();
+            while (i < nn) {
+                Garbage garbageWritten = (Garbage) bag.removeByIndex(i);
+                bag.add(garbageWritten);
+                Garbage againGarbageWritten = (Garbage) bag.removeByIndex(i);
+                bag.add(againGarbageWritten);
+                int j = i;
+                int counter = 0;
+                Garbage garbageWrittenAgain = garbageWritten;
+                while (j + 1 < nn && garbageWritten.equals(garbageWrittenAgain)) {
+                    garbageWrittenAgain = (Garbage) bag.removeByIndex(j + 1);
+                    bag.add(garbageWrittenAgain);
+                    Garbage addAgain = (Garbage) bag.removeByIndex(j + 1);
+                    bag.add(addAgain);
+                    counter++;
+                    j++;
+                }
+                if (!(j + 1 < nn && garbageWritten.equals(garbageWrittenAgain))) {
+                    garbageWrittenAgain = (Garbage) bag.removeByIndex(j);
+                    bag.add(garbageWrittenAgain);
+                    Garbage addAgain = (Garbage) bag.removeByIndex(j);
+                    bag.add(addAgain);
+                    counter++;
+                    j++;
+                }
+                System.out.println(garbageWritten.toString() + "," + counter);
+                if (bagName[nameOrder] == "Updated trash can") {
+                    myWriter.write(garbageWritten.toString() + "," + counter + "\n");
+                }
+                i += counter;
+            }
+            nameOrder++;
+        }
+        myWriter.close();
+
+    }
+}
+
+import java.util.Arrays;
+import java.util.Random;
+
+public class GlassRecycleBin<T> implements IBag<T> {
+    private boolean initialized = false;
+    private static int MAX_CAPACITY;
+    private T[] bag;
+    private int numberOfEntries;
+    public GlassRecycleBin() {
+        @SuppressWarnings("unchechked")
+        Integer[] maxCapList = {5, 10 ,15};
+        Random random = new Random();
+        int index = random.nextInt(maxCapList.length);
+        MAX_CAPACITY = maxCapList[index];
+        T[] tempBag = (T[]) new Object[maxCapList[index]];
+        bag = tempBag;
+        numberOfEntries = 0;
+        initialized = true;
+    }
+    private void checkInitialization() {
+        if (!initialized) {
+            throw new SecurityException("ArrayBag object is not initialized " + "properly.");
+        }
+    }
+    @Override
+    public boolean add(T newItem) {
+        checkInitialization();
+        boolean result = true;
+        if (isFull()) {
+            result = false;
+        } else {
+            bag[numberOfEntries] = newItem;
+            numberOfEntries++;
+        }
+        return result;
+    }
+    @Override
+    public boolean isEmpty() {
+        return numberOfEntries == 0;
+    }
+
+    @Override
+    public boolean isFull() {
+        return numberOfEntries >= bag.length;
+    }
+
+    @Override
+    public T removeByIndex(int index) {
+        T result = null;
+        if (!isEmpty() && (index >= 0)) {
+            result = bag[index];
+            bag[index] = bag[numberOfEntries - 1];
+            bag[numberOfEntries - 1] = null;
+            numberOfEntries--;
+        }
+        return result;
+    }
+
+    @Override
+    public T remove() {
+        checkInitialization();
+        T result = null;
+        if (numberOfEntries > 0) {
+            result = bag[numberOfEntries - 1];
+            bag[numberOfEntries - 1] = null;
+            numberOfEntries--;
+        }
+        return result;
+    }
+
+    @Override
+    public T remove(T item) {
+        return null;
+    }
+
+    @Override
+    public int getItemCount() {
+        return numberOfEntries;
+    }
+
+    @Override
+    public int getIndexOf(T item) {
+        int where = -1;
+        boolean found = false;
+        int index = 0;
+        while (!found && (index < numberOfEntries)) {
+            if (item.equals(bag[index])) {
+                found = true;
+                where = index;
+            }
+            index++;
+        }
+        return where;
+    }
+
+    @Override
+    public boolean contains(T item) {
+        checkInitialization();
+        return getIndexOf(item) > -1;
+    }
+
+    @Override
+    public void displayItems(int i) {
+
+    }
+
+    @Override
+    public void dump() {
+        while (!isEmpty()) {
+            remove();
+        }
+    }
+
+    @Override
+    public boolean transferTo(IBag<T> targetBag, T item) {
+        return false;
+    }
+}
+
+import java.util.Arrays;
+import java.util.Random;
+
+public class MetalRecycleBin<T> implements IBag<T> {
+    private boolean initialized = false;
+    private static int MAX_CAPACITY;
+    private T[] bag;
+    private int numberOfEntries;
+    public MetalRecycleBin() {
+            @SuppressWarnings("unchechked")
+            Integer[] maxCapList = {5, 10 ,15};
+            Random random = new Random();
+            int index = random.nextInt(maxCapList.length);
+            MAX_CAPACITY = maxCapList[index];
+            T[] tempBag = (T[]) new Object[maxCapList[index]];
+            bag = tempBag;
+            numberOfEntries = 0;
+            initialized = true;
+    }
+    private void checkInitialization() {
+        if (!initialized) {
+            throw new SecurityException("ArrayBag object is not initialized " + "properly.");
+        }
+    }
+    @Override
+    public boolean add(T newItem) {
+        checkInitialization();
+        boolean result = true;
+        if (isFull()) {
+            result = false;
+        } else {
+            bag[numberOfEntries] = newItem;
+            numberOfEntries++;
+        }
+        return result;
+    }
+
+    private void doublecapacity() {
+        int newLength = 2* bag.length;
+        checkCapacity(newLength);
+        bag = Arrays.copyOf(bag, newLength);
+    }
+
+    private void checkCapacity(int newLength) {
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return numberOfEntries == 0;
+    }
+
+    @Override
+    public boolean isFull() {
+        return numberOfEntries >= bag.length;
+    }
+
+    @Override
+    public T removeByIndex(int index) {
+        T result = null;
+        if (!isEmpty() && (index >= 0)) {
+            result = bag[index];
+            bag[index] = bag[numberOfEntries - 1];
+            bag[numberOfEntries - 1] = null;
+            numberOfEntries--;
+        }
+        return result;
+    }
+
+    @Override
+    public T remove() {
+        checkInitialization();
+        T result = null;
+        if (numberOfEntries > 0) {
+            result = bag[numberOfEntries - 1];
+            bag[numberOfEntries - 1] = null;
+            numberOfEntries--;
+        }
+        return result;
+    }
+
+    @Override
+    public T remove(T item) {
+        return null;
+    }
+
+    @Override
+    public int getItemCount() {
+        return numberOfEntries;
+    }
+
+    @Override
+    public int getIndexOf(T item) {
+        int where = -1;
+        boolean found = false;
+        int index = 0;
+        while (!found && (index < numberOfEntries)) {
+            if (item.equals(bag[index])) {
+                found = true;
+                where = index;
+            }
+            index++;
+        }
+        return where;
+    }
+
+    @Override
+    public boolean contains(T item) {
+        checkInitialization();
+        return getIndexOf(item) > -1;
+    }
+
+    @Override
+    public void displayItems(int i) {
+
+    }
+
+    @Override
+    public void dump() {
+        while (!isEmpty()) {
+            remove();
+        }
+    }
+
+    @Override
+    public boolean transferTo(IBag<T> targetBag, T item) {
+        return false;
+    }
+}
+
+import java.util.Arrays;
+import java.util.Random;
+
+public class OrganicRecycleBin<T> implements IBag<T> {
+    private boolean initialized = false;
+    private static int MAX_CAPACITY;
+    private T[] bag;
+    private int numberOfEntries;
+    public OrganicRecycleBin() {
+            @SuppressWarnings("unchechked")
+            Integer[] maxCapList = {5, 10 ,15};
+            Random random = new Random();
+            int index = random.nextInt(maxCapList.length);
+            MAX_CAPACITY = maxCapList[index];
+            T[] tempBag = (T[]) new Object[maxCapList[index]];
+            bag = tempBag;
+            numberOfEntries = 0;
+            initialized = true;
+    }
+    private void checkInitialization() {
+        if (!initialized) {
+            throw new SecurityException("ArrayBag object is not initialized " + "properly.");
+        }
+    }
+    @Override
+    public boolean add(T newItem) {
+        checkInitialization();
+        boolean result = true;
+        if (isFull()) {
+            result = false;
+        } else {
+            bag[numberOfEntries] = newItem;
+            numberOfEntries++;
+        }
+        return result;
+    }
+
+    private void doublecapacity() {
+        int newLength = 2* bag.length;
+        checkCapacity(newLength);
+        bag = Arrays.copyOf(bag, newLength);
+    }
+
+    private void checkCapacity(int newLength) {
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return numberOfEntries == 0;
+    }
+
+    @Override
+    public boolean isFull() {
+        return numberOfEntries >= bag.length;
+    }
+
+    @Override
+    public T removeByIndex(int index) {
+        T result = null;
+        if (!isEmpty() && (index >= 0)) {
+            result = bag[index];
+            bag[index] = bag[numberOfEntries - 1];
+            bag[numberOfEntries - 1] = null;
+            numberOfEntries--;
+        }
+        return result;
+    }
+
+    @Override
+    public T remove() {
+        checkInitialization();
+        T result = null;
+        if (numberOfEntries > 0) {
+            result = bag[numberOfEntries - 1];
+            bag[numberOfEntries - 1] = null;
+            numberOfEntries--;
+        }
+        return result;
+    }
+    @Override
+    public T remove(T item) {
+        return null;
+    }
+
+    @Override
+    public int getItemCount() {
+        return numberOfEntries;
+    }
+
+    @Override
+    public int getIndexOf(T item) {
+        int where = -1;
+        boolean found = false;
+        int index = 0;
+        while (!found && (index < numberOfEntries)) {
+            if (item.equals(bag[index])) {
+                found = true;
+                where = index;
+            }
+            index++;
+        }
+        return where;
+    }
+
+    @Override
+    public boolean contains(T item) {
+        checkInitialization();
+        return getIndexOf(item) > -1;
+    }
+
+    @Override
+    public void displayItems(int i) {
+
+    }
+
+    @Override
+    public void dump() {
+        while (!isEmpty()) {
+            remove();
+        }
+    }
+
+    @Override
+    public boolean transferTo(IBag<T> targetBag, T item) {
+        return false;
+    }
+}
+
+import java.util.Arrays;
+import java.util.Random;
+
+public class PaperRecycleBin<T> implements IBag<T> {
+    private boolean initialized = false;
+    private static int MAX_CAPACITY;
+    private T[] bag;
+    private int numberOfEntries;
+    public PaperRecycleBin() {
+            @SuppressWarnings("unchechked")
+            Integer[] maxCapList = {5, 10 ,15};
+            Random random = new Random();
+            int index = random.nextInt(maxCapList.length);
+            MAX_CAPACITY = maxCapList[index];
+            T[] tempBag = (T[]) new Object[maxCapList[index]];
+            bag = tempBag;
+            numberOfEntries = 0;
+            initialized = true;
+    }
+    private void checkInitialization() {
+        if (!initialized) {
+            throw new SecurityException("ArrayBag object is not initialized " + "properly.");
+        }
+    }
+    @Override
+    public boolean add(T newItem) {
+        checkInitialization();
+        boolean result = true;
+        if (isFull()) {
+            result = false;
+        } else {
+            bag[numberOfEntries] = newItem;
+            numberOfEntries++;
+        }
+        return result;
+    }
+
+    private void checkCapacity(int newLength) {
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return numberOfEntries == 0;
+    }
+
+    @Override
+    public boolean isFull() {
+        return numberOfEntries >= bag.length;
+    }
+
+    @Override
+    public T removeByIndex(int index) {
+        T result = null;
+        if (!isEmpty() && (index >= 0)) {
+            result = bag[index];
+            bag[index] = bag[numberOfEntries - 1];
+            bag[numberOfEntries - 1] = null;
+            numberOfEntries--;
+        }
+        return result;
+    }
+
+    @Override
+    public T remove() {
+        checkInitialization();
+        T result = null;
+        if (numberOfEntries > 0) {
+            result = bag[numberOfEntries - 1];
+            bag[numberOfEntries - 1] = null;
+            numberOfEntries--;
+        }
+        return result;
+    }
+
+    @Override
+    public T remove(T item) {
+        return null;
+    }
+
+    @Override
+    public int getItemCount() {
+        return numberOfEntries;
+    }
+
+    @Override
+    public int getIndexOf(T item) {
+        int where = -1;
+        boolean found = false;
+        int index = 0;
+        while (!found && (index < numberOfEntries)) {
+            if (item.equals(bag[index])) {
+                found = true;
+                where = index;
+            }
+            index++;
+        }
+        return where;
+    }
+
+    @Override
+    public boolean contains(T item) {
+        checkInitialization();
+        return getIndexOf(item) > -1;
+    }
+
+    @Override
+    public void displayItems(int i) {
+
+    }
+
+    @Override
+    public void dump() {
+        while (!isEmpty()) {
+            remove();
+        }
+    }
+
+    @Override
+    public boolean transferTo(IBag<T> targetBag, T item) {
+        return false;
+    }
+}
+import java.util.Arrays;
+import java.util.Random;
+
+public class PlasticRecycleBin<T> implements IBag<T> {
+    private boolean initialized = false;
+    private static int MAX_CAPACITY = 15;
+    private T[] bag;
+    private int numberOfEntries;
+    public PlasticRecycleBin() {
+            @SuppressWarnings("unchechked")
+            Integer[] maxCapList = {5, 10 ,15};
+            Random random = new Random();
+            int index = random.nextInt(maxCapList.length);
+            MAX_CAPACITY = maxCapList[index];
+            T[] tempBag = (T[]) new Object[maxCapList[index]];
+            bag = tempBag;
+            numberOfEntries = 0;
+            initialized = true;
+    }
+    private void checkInitialization() {
+        if (!initialized) {
+            throw new SecurityException("ArrayBag object is not initialized " + "properly.");
+        }
+    }
+    @Override
+    public boolean add(T newItem) {
+        checkInitialization();
+        boolean result = true;
+        if (isFull()) {
+            result = false;
+        } else {
+            bag[numberOfEntries] = newItem;
+            numberOfEntries++;
+        }
+        return result;
+    }
+
+    private void doublecapacity() {
+        int newLength = 2* bag.length;
+        checkCapacity(newLength);
+        bag = Arrays.copyOf(bag, newLength);
+    }
+
+    private void checkCapacity(int newLength) {
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return numberOfEntries == 0;
+    }
+
+    @Override
+    public boolean isFull() {
+        return numberOfEntries >= bag.length;
+    }
+
+    @Override
+    public T removeByIndex(int index) {
+        T result = null;
+        if (!isEmpty() && (index >= 0)) {
+            result = bag[index];
+            bag[index] = bag[numberOfEntries - 1];
+            bag[numberOfEntries - 1] = null;
+            numberOfEntries--;
+        }
+        return result;
+    }
+
+    @Override
+    public T remove() {
+        checkInitialization();
+        T result = null;
+        if (numberOfEntries > 0) {
+            result = bag[numberOfEntries - 1];
+            bag[numberOfEntries - 1] = null;
+            numberOfEntries--;
+        }
+        return result;
+    }
+
+    @Override
+    public T remove(T item) {
+        return null;
+    }
+
+    @Override
+    public int getItemCount() {
+        return numberOfEntries;
+    }
+
+    @Override
+    public int getIndexOf(T item) {
+        int where = -1;
+        boolean found = false;
+        int index = 0;
+        while (!found && (index < numberOfEntries)) {
+            if (item.equals(bag[index])) {
+                found = true;
+                where = index;
+            }
+            index++;
+        }
+        return where;
+    }
+
+    @Override
+    public boolean contains(T item) {
+        checkInitialization();
+        return getIndexOf(item) > -1;
+    }
+
+    @Override
+    public void displayItems(int i) {
+
+    }
+
+    @Override
+    public void dump() {
+        while (!isEmpty()) {
+            remove();
+        }
+    }
+
+    @Override
+    public boolean transferTo(IBag<T> targetBag, T item) {
+        return false;
+    }
+}
+import java.util.Arrays;
+
+public final class TrashCan<T> implements IBag<T>{
+    private boolean initialized = false;
+    private static final int MAX_CAPACITY = 450;
+    private T[] bag;
+    private int numberOfEntries;
+    private static final int DEFAULT_CAPACITY = 450;
+    public TrashCan() {
+        this(DEFAULT_CAPACITY);
+    }
+    public TrashCan(int capacity) {
+        if (capacity <= MAX_CAPACITY) {
+            @SuppressWarnings("unchechked")
+            T[] tempBag = (T[]) new Object[capacity];
+            bag = tempBag;
+            numberOfEntries = 0;
+            initialized = true;
+        } else {
+            throw new IllegalStateException("Attempt to create a bag " + "whose capacity exceeds " + "allowed maximum.");
+        }
+    }
+    private void checkInitialization() {
+        if (!initialized) {
+            throw new SecurityException("ArrayBag object is not initialized " + "properly.");
+        }
+    }
+    @Override
+    public boolean add(T newItem) {
+        checkInitialization();
+        if (isFull()) {
+            doublecapacity();
+        }
+        bag[numberOfEntries] = newItem;
+        numberOfEntries++;
+        return true;
+    }
+
+    private void doublecapacity() {
+        int newLength = 2* bag.length;
+        checkCapacity(newLength);
+        bag = Arrays.copyOf(bag, newLength);
+    }
+
+    private void checkCapacity(int newLength) {
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return numberOfEntries == 0;
+    }
+
+    @Override
+    public boolean isFull() {
+        return numberOfEntries >= bag.length;
+    }
+
+    @Override
+    public T removeByIndex(int index) {
+        T result = null;
+        if (!isEmpty() && (index >= 0)) {
+            result = bag[index];
+            bag[index] = bag[numberOfEntries - 1];
+            bag[numberOfEntries - 1] = null;
+            numberOfEntries--;
+        }
+        return result;
+    }
+
+    @Override
+    public T remove() {
+        checkInitialization();
+        T result = null;
+        if (numberOfEntries > 0) {
+            result = bag[numberOfEntries - 1];
+            bag[numberOfEntries - 1] = null;
+            numberOfEntries--;
+        }
+        return result;
+    }
+
+    @Override
+    public T remove(T item) {
+        int index = getIndexOf(item);
+        return removeByIndex(index);
+    }
+
+    @Override
+    public int getItemCount() {
+        return numberOfEntries;
+    }
+
+    @Override
+    public int getIndexOf(T item) {
+        int where = -1;
+        boolean found = false;
+        int index = 0;
+        while (!found && (index < numberOfEntries)) {
+            if (item.equals(bag[index])) {
+                found = true;
+                where = index;
+            }
+            index++;
+        }
+        return where;
+    }
+
+    @Override
+    public boolean contains(T item) {
+        checkInitialization();
+        return getIndexOf(item) > -1;
+    }
+
+    public void displayItems(int index) {
+    }
+
+    @Override
+    public void dump() {
+        while (!isEmpty()) {
+            remove();
+        }
+    }
+
+    @Override
+    public boolean transferTo(IBag<T> targetBag, T item) {
+        if (targetBag.isFull()) {
+            return false;
+        } else {
+            targetBag.add(item);
+            return true;
+        }
+    }
+
+    public boolean separate(T item) {return false;}
+}
